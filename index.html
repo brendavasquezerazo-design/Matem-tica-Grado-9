@@ -419,10 +419,10 @@
   let studentData = {};
   let exitCount = 0;
   let timerInterval = null;
-  let totalSeconds = 50 * 60; // 50 minutos exactos
+  let totalSeconds = 50 * 60;
   let answers = {};
+  let examActive = false;
 
-  // MECLADOR ALEATORIO (Fisher-Yates)
   function shuffle(array) {
     let arr = [...array];
     for (let i = arr.length - 1; i > 0; i--) {
@@ -432,7 +432,6 @@
     return arr;
   }
 
-  // RENDERIZAR OPCIONES CON ALEATORIZACIÓN
   function renderMultipleChoice() {
     const letters = ['a', 'b', 'c', 'd'];
     Object.keys(RAW_OPTIONS).forEach(key => {
@@ -452,7 +451,6 @@
     });
   }
 
-  // MANEJO DE INICIO DE SESIÓN
   document.getElementById('student-form').addEventListener('submit', function(e) {
     e.preventDefault();
     studentData.name = document.getElementById('std-name').value.trim();
@@ -463,19 +461,22 @@
     document.getElementById('login-screen').classList.add('hidden');
     document.getElementById('exam-screen').classList.remove('hidden');
 
+    examActive = true;
     renderMultipleChoice();
     startTimer();
     initSecurityListeners();
     requestFullScreen();
   });
 
-  // SOLICITAR PANTALLA COMPLETA
   function requestFullScreen() {
     const elem = document.documentElement;
-    if (elem.requestFullscreen) { elem.requestFullscreen().catch(() => {}); }
+    if (elem.requestFullscreen) { 
+      elem.requestFullscreen().catch(() => {}); 
+    } else if (elem.webkitRequestFullscreen) { 
+      elem.webkitRequestFullscreen(); 
+    }
   }
 
-  // CRONÓMETRO DE 50 MINUTOS
   function startTimer() {
     timerInterval = setInterval(() => {
       totalSeconds--;
@@ -490,7 +491,6 @@
     }, 1000);
   }
 
-  // GUARDADO AUTOMÁTICO
   function autoSave(field, val) {
     answers[field] = val;
     document.getElementById('save-status').innerText = 'Guardando...';
@@ -499,31 +499,51 @@
     }, 300);
   }
 
-  // DETECCIÓN DE SALIDAS Y SEGURIDAD
-  let lastExit = 0;
+  // DETECCIÓN REFORZADA PARA MÓVILES Y ESCRITORIO
+  let lastExitTime = 0;
   function initSecurityListeners() {
-    document.addEventListener('visibilitychange', handleExit);
-    window.addEventListener('blur', handleExit);
-    
-    // Bloquear menú contextual y copiar/pegar
+    // 1. Detección de cambio de pestaña / minimizar en móviles y PC
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && examActive) {
+        triggerSecurityViolation('Cambio de pestaña o aplicación detectado');
+      }
+    });
+
+    // 2. Pérdida de foco de ventana
+    window.addEventListener('blur', () => {
+      if (examActive) {
+        triggerSecurityViolation('Pérdida de foco de la pantalla');
+      }
+    });
+
+    // 3. Salida de pantalla completa (si el navegador la soporta)
+    document.addEventListener('fullscreenchange', () => {
+      if (!document.fullscreenElement && examActive) {
+        triggerSecurityViolation('Salida del modo pantalla completa');
+      }
+    });
+
+    // 4. Bloqueo de menú contextual y combinaciones de teclas
     document.addEventListener('contextmenu', e => e.preventDefault());
     document.addEventListener('keydown', e => {
-      if (e.ctrlKey && ['c', 'v', 'x', 'u', 'p'].includes(e.key.toLowerCase())) {
+      if (e.ctrlKey && ['c', 'v', 'x', 'u', 'p', 'tab'].includes(e.key.toLowerCase())) {
         e.preventDefault();
       }
     });
   }
 
-  function handleExit() {
+  function triggerSecurityViolation(reason) {
     const now = Date.now();
-    if (now - lastExit < 2000) return; // Agrupar eventos duplicados
-    lastExit = now;
+    // Filtro de 2.5 segundos para agrupar múltiples disparos del mismo incidente
+    if (now - lastExitTime < 2500) return; 
+    lastExitTime = now;
 
     exitCount++;
+
     if (exitCount === 1) {
-      showModal("ADVERTENCIA (1/2)", "Se ha detectado que salió de la ventana del examen. Este incidente ha sido registrado.");
+      showModal("ADVERTENCIA (1/2)", `Se ha detectado una salida del examen (${reason}). El incidente ha sido registrado.`);
     } else if (exitCount === 2) {
-      showModal("ADVERTENCIA FINAL (2/2)", "⚠️ ¡Atención! Una salida más provocará la ANULACIÓN AUTOMÁTICA del examen.");
+      showModal("ADVERTENCIA FINAL (2/2)", `⚠️ ¡Atención! Se detectó otra salida (${reason}). La próxima salida provocará la ANULACIÓN AUTOMÁTICA de tu examen.`);
     } else if (exitCount >= 3) {
       finishExam("ANULADO");
     }
@@ -537,6 +557,7 @@
 
   function closeModal() {
     document.getElementById('warning-modal').style.display = 'none';
+    requestFullScreen(); // Intenta reingresar a pantalla completa
   }
 
   function confirmSubmit() {
@@ -545,8 +566,8 @@
     }
   }
 
-  // FINALIZAR EVALUACIÓN
   function finishExam(status) {
+    examActive = false;
     clearInterval(timerInterval);
     document.getElementById('exam-screen').classList.add('hidden');
     document.getElementById('result-screen').classList.remove('hidden');
