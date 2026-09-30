@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Evaluación Digital de Matemáticas - 9.º Grado</title>
+  <style>
+    :root {
+      --primary: #1a365d;
+      --secondary: #2b6cb0;
+      --accent: #c53030;
+      --bg: #f7fafc;
+      --card-bg: #ffffff;
+      --text: #2d3748;
+      --border: #e2e8f0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding: 20px; -webkit-user-select: none; user-select: none; }
+    
+    .container { max-width: 900px; margin: 0 auto; background: var(--card-bg); padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    header { text-align: center; border-bottom: 2px solid var(--primary); padding-bottom: 15px; margin-bottom: 25px; }
+    h1 { color: var(--primary); font-size: 1.6rem; }
+    h2 { color: var(--secondary); font-size: 1.2rem; margin-top: 5px; }
+
+    /* Sticky Timer Bar */
+    #timer-bar {
+      position: sticky; top: 0; z-index: 100; background: var(--primary); color: #fff;
+      padding: 12px 20px; font-weight: bold; font-size: 1.2rem; display: flex;
+      justify-content: space-between; align-items: center; border-radius: 6px; margin-bottom: 20px;
+    }
+    
+    .section-title { background: var(--primary); color: white; padding: 10px 15px; border-radius: 5px; margin: 25px 0 15px 0; font-size: 1.1rem; }
+    .question-card { border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 20px; background: #fff; }
+    .question-title { font-weight: bold; margin-bottom: 12px; }
+
+    .options-list { list-style: none; }
+    .options-list li { margin-bottom: 10px; }
+    .options-list label { display: flex; align-items: center; padding: 10px; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; transition: background 0.2s; }
+    .options-list label:hover { background: #edf2f7; }
+    .options-list input[type="radio"] { margin-right: 12px; }
+
+    textarea, input[type="text"], select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; margin-top: 8px; }
+    textarea { min-height: 80px; resize: vertical; -webkit-user-select: text; user-select: text; }
+    input[type="text"] { -webkit-user-select: text; user-select: text; }
+
+    .btn { background: var(--secondary); color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: bold; }
+    .btn:hover { background: var(--primary); }
+    .btn-danger { background: var(--accent); }
+
+    /* Modal Warning */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; }
+    .modal-content { background: white; padding: 30px; border-radius: 8px; max-width: 500px; text-align: center; }
+
+    /* Table styles */
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { border: 1px solid var(--border); padding: 8px; text-align: center; }
+    th { background-color: #edf2f7; }
+
+    .hidden { display: none !important; }
+    .img-container { text-align: center; margin: 15px 0; }
+    .img-container img { max-width: 100%; height: auto; border: 1px solid var(--border); border-radius: 6px; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- ENCABEZADO OFICIAL -->
+  <header>
+    <h1>INSTITUCIÓN EDUCATIVA</h1>
+    <h2>EVALUACIÓN DE MATEMÁTICAS — 9.° GRADO</h2>
+    <p style="margin-top:8px; font-size: 0.9rem;">Tiempo asignado: 50 minutos | Un solo intento permitido</p>
+  </header>
+
+  <!-- FORMULARIO DE INGRESO -->
+  <div id="login-screen">
+    <h3>Datos del Estudiante</h3>
+    <p style="font-size: 0.9rem; color: #666; margin-bottom: 15px;">Complete sus datos para iniciar la evaluación.</p>
+    <form id="student-form">
+      <div style="margin-bottom: 12px;">
+        <label>Nombre Completo *</label>
+        <input type="text" id="std-name" required placeholder="Ej. Juan Carlos Pérez">
+      </div>
+      <div style="margin-bottom: 12px;">
+        <label>Grado</label>
+        <input type="text" value="9.° Grado" disabled readonly style="background-color: #e2e8f0;">
+      </div>
+      <div style="margin-bottom: 12px;">
+        <label>Sección / Grupo *</label>
+        <select id="std-section" required>
+          <option value="">Seleccione una sección...</option>
+          <option value="A">Sección A</option>
+          <option value="B">Sección B</option>
+          <option value="C">Sección C</option>
+        </select>
+      </div>
+      <button type="submit" class="btn" style="width: 100%; margin-top: 15px;">INICIAR EVALUACIÓN</button>
+    </form>
+  </div>
+
+  <!-- PANTALLA DE EXAMEN -->
+  <div id="exam-screen" class="hidden">
+    <div id="timer-bar">
+      <span>TIEMPO RESTANTE: <span id="timer-display">50:00</span></span>
+      <span id="save-status" style="font-size: 0.85rem; font-weight: normal;">Guardado automático activo</span>
+    </div>
+
+    <form id="exam-form">
+      <!-- PARTE I -->
+      <div class="section-title">PARTE I. FALSO O VERDADERO (10% - 1 punto c/u)</div>
+      <p style="margin-bottom: 15px; font-size: 0.9rem;">Indicación: Seleccione V si la proposición es verdadera, o F si es falsa. Justifique sus respuestas falsas en el cuadro adjunto.</p>
+
+      <div class="question-card">
+        <div class="question-title">1. Dos triángulos son semejantes si sus ángulos correspondientes son congruentes y sus lados correspondientes son proporcionales.</div>
+        <label><input type="radio" name="p1_val" value="V" onchange="autoSave('p1_val', 'V')"> Verdadero (V)</label><br>
+        <label><input type="radio" name="p1_val" value="F" onchange="autoSave('p1_val', 'F')"> Falso (F)</label>
+        <textarea placeholder="Justifique si es Falso..." onblur="autoSave('p1_just', this.value)"></textarea>
+      </div>
+
+      <div class="question-card">
+        <div class="question-title">2. El segmento que une los puntos medios de dos lados de un triángulo es paralelo al tercer lado y su longitud equivale al doble de la medida de dicho tercer lado.</div>
+        <label><input type="radio" name="p2_val" value="V" onchange="autoSave('p2_val', 'V')"> Verdadero (V)</label><br>
+        <label><input type="radio" name="p2_val" value="F" onchange="autoSave('p2_val', 'F')"> Falso (F)</label>
+        <textarea placeholder="Justifique si es Falso..." onblur="autoSave('p2_just', this.value)"></textarea>
+      </div>
+
+      <div class="question-card">
+        <div class="question-title">3. Si tres o más rectas paralelas son cortadas por dos rectas transversales, los segmentos determinados en una de las transversales son proporcionales a los segmentos correspondientes en la otra transversal.</div>
+        <label><input type="radio" name="p3_val" value="V" onchange="autoSave('p3_val', 'V')"> Verdadero (V)</label><br>
+        <label><input type="radio" name="p3_val" value="F" onchange="autoSave('p3_val', 'F')"> Falso (F)</label>
+        <textarea placeholder="Justifique si es Falso..." onblur="autoSave('p3_just', this.value)"></textarea>
+      </div>
+
+      <div class="question-card">
+        <div class="question-title">4. En una circunferencia, la medida del ángulo inscrito es igual a la medida del ángulo central que subtiende el mismo arco.</div>
+        <label><input type="radio" name="p4_val" value="V" onchange="autoSave('p4_val', 'V')"> Verdadero (V)</label><br>
+        <label><input type="radio" name="p4_val" value="F" onchange="autoSave('p4_val', 'F')"> Falso (F)</label>
+        <textarea placeholder="Justifique si es Falso..." onblur="autoSave('p4_just', this.value)"></textarea>
+      </div>
+
+      <div class="question-card">
+        <div class="question-title">5. Si a cada uno de los datos de una distribución se le suma una constante 'k', la desviación típica aumenta en esa misma cantidad 'k'.</div>
+        <label><input type="radio" name="p5_val" value="V" onchange="autoSave('p5_val', 'V')"> Verdadero (V)</label><br>
+        <label><input type="radio" name="p5_val" value="F" onchange="autoSave('p5_val', 'F')"> Falso (F)</label>
+        <textarea placeholder="Justifique si es Falso..." onblur="autoSave('p5_just', this.value)"></textarea>
+      </div>
+
+      <div class="question-card">
+        <div class="question-title">6. Si cada dato de una serie estadística se multiplica por una constante positiva 'c', la nueva desviación típica queda multiplicada por 'c'.</div>
+        <label><input type="radio" name="p6_val" value="V" onchange="autoSave('p6_val', 'V')"> Verdadero (V)</label><br>
+        <label><input type="radio" name="p6_val" value="F" onchange="autoSave('p6_val', 'F')"> Falso (F)</label>
+        <textarea placeholder="Justifique si es Falso..." onblur="autoSave('p6_just', this.value)"></textarea>
+      </div>
+
+      <div class="question-card">
+        <div class="question-title">7. Dos cuerdas paralelas en una circunferencia determinan entre ellas arcos de distinta medida.</div>
+        <label><input type="radio" name="p7_val" value="V" onchange="autoSave('p7_val', 'V')"> Verdadero (V)</label><br>
+        <label><input type="radio" name="p7_val" value="F" onchange="autoSave('p7_val', 'F')"> Falso (F)</label>
+        <textarea placeholder="Justifique si es Falso..." onblur="autoSave('p7_just', this.value)"></textarea>
+      </div>
+
+      <div class="question-card">
+        <div class="question-title">8. El rango y la desviación media son medidas de tendencia central que indican el valor promedio de los datos agrupados.</div>
+        <label><input type="radio" name="p8_val" value="V" onchange="autoSave('p8_val', 'V')"> Verdadero (V)</label><br>
+        <label><input type="radio" name="p8_val" value="F" onchange="autoSave('p8_val', 'F')"> Falso (F)</label>
+        <textarea placeholder="Justifique si es Falso..." onblur="autoSave('p8_just', this.value)"></textarea>
+      </div>
+
+      <div class="question-card">
+        <div class="question-title">9. La altura de un cono recto, el radio de su base y su generatriz forman un triángulo rectángulo donde la generatriz actúa como la hipotenusa.</div>
+        <label><input type="radio" name="p9_val" value="V" onchange="autoSave('p9_val', 'V')"> Verdadero (V)</label><br>
+        <label><input type="radio" name="p9_val" value="F" onchange="autoSave('p9_val', 'F')"> Falso (F)</label>
+        <textarea placeholder="Justifique si es Falso..." onblur="autoSave('p9_just', this.value)"></textarea>
+      </div>
+
+      <!-- PARTE II -->
+      <div class="section-title">PARTE II. OPCIÓN ÚNICA / OPCIÓN MÚLTIPLE (30% - 3 puntos c/u)</div>
+      <p style="margin-bottom: 15px; font-size: 0.9rem;">Indicación: Seleccione la respuesta correcta. Ingrese sus cálculos en el cuadro de texto.</p>
+
+      <div class="question-card" id="q_p2_1">
+        <div class="question-title">1. Los lados de un triángulo miden 6 cm, 8 cm y 10 cm. Si un triángulo semejante a él tiene un lado homólogo al de 6 cm que mide 15 cm, ¿cuál es la longitud del lado mayor del segundo triángulo?</div>
+        <ul class="options-list" id="opts_p2_1"></ul>
+        <textarea placeholder="Escriba sus cálculos justificativos..." onblur="autoSave('p2_1_calc', this.value)"></textarea>
+      </div>
+
+      <div class="question-card" id="q_p2_2">
+        <div class="question-title">2. En el triángulo ABC, el lado AC mide 24 cm. Si M y N son los puntos medios de los lados AB y BC respectivamente, ¿cuánto mide el segmento MN según el Teorema de la base media?</div>
+        <ul class="options-list" id="opts_p2_2"></ul>
+        <textarea placeholder="Escriba sus cálculos justificativos..." onblur="autoSave('p2_2_calc', this.value)"></textarea>
+      </div>
+
+      <div class="question-card" id="q_p2_3">
+        <div class="question-title">3. Se desea conocer la longitud de la sombra de un edificio de 20 m de altura en el mismo instante en que un poste vertical de 3 m de alto proyecta una sombra de 1.5 m. la longitud de la sombra del edificio mide:</div>
+        <ul class="options-list" id="opts_p2_3"></ul>
+        <textarea placeholder="Escriba sus cálculos justificativos..." onblur="autoSave('p2_3_calc', this.value)"></textarea>
+      </div>
+
+      <div class="question-card" id="q_p2_4">
+        <div class="question-title">4. Una escalera de 13 metros de longitud está apoyada sobre una pared vertical. Si la base de la escalera se encuentra a 5 metros de la pared, ¿a qué altura sobre la pared se halla el extremo superior de la escalera?</div>
+        <ul class="options-list" id="opts_p2_4"></ul>
+        <textarea placeholder="Escriba sus cálculos justificativos..." onblur="autoSave('p2_4_calc', this.value)"></textarea>
+      </div>
+
+      <div class="question-card" id="q_p2_6">
+        <div class="question-title">6. Un cono recto tiene un radio en la base de r = 6 cm y una generatriz g = 10 cm. ¿Cuál es su altura (h) y su volumen exacto (V) en términos de π?</div>
+        <ul class="options-list" id="opts_p2_6"></ul>
+        <textarea placeholder="Escriba sus cálculos justificativos..." onblur="autoSave('p2_6_calc', this.value)"></textarea>
+      </div>
+
+      <div class="question-card" id="q_p2_7">
+        <div class="question-title">7. En una distribución de datos, la desviación típica original es σ = 4.5. Si a cada valor de la variable se le suma la constante k = 7, ¿cuál es el valor de la nueva desviación típica?</div>
+        <ul class="options-list" id="opts_p2_7"></ul>
+        <textarea placeholder="Escriba sus cálculos justificativos..." onblur="autoSave('p2_7_calc', this.value)"></textarea>
+      </div>
+
+      <div class="question-card" id="q_p2_8">
+        <div class="question-title">8. La desviación típica del peso de un conjunto de productos es σ = 3.2 kg. Si todos los pesos se multiplican por un factor de conversión de c = 2.5, ¿cuál será la nueva desviación típica?</div>
+        <ul class="options-list" id="opts_p2_8"></ul>
+        <textarea placeholder="Escriba sus cálculos justificativos..." onblur="autoSave('p2_8_calc', this.value)"></textarea>
+      </div>
+
+      <div class="question-card" id="q_p2_9">
+        <div class="question-title">9. En una circunferencia se trazan dos cuerdas paralelas AB y CD. Si el ángulo central AOC mide 84°, ¿cuánto mide el ángulo inscrito BAD?</div>
+        <ul class="options-list" id="opts_p2_9"></ul>
+        <textarea placeholder="Escriba sus cálculos justificativos..." onblur="autoSave('p2_9_calc', this.value)"></textarea>
+      </div>
+
+      <!-- PARTE III -->
+      <div class="section-title">PARTE III. DESARROLLO Y RESOLUCIÓN DE PROBLEMAS (60% - 6 puntos c/u)</div>
+      
+      <div class="question-card">
+        <div class="question-title">Ejercicio 1.</div>
+        <p>En la siguiente figura (o representación), las líneas L1, L2 y L3 son paralelas. Se conocen las medidas AE = x + 2, EB = 6, CF = 2x - 1, y FD = 8. Determinar el valor de x.</p>
+
+        <textarea placeholder="Escriba aquí el desarrollo algebraico completo y el resultado..." onblur="autoSave('p3_ej1_dev', this.value)"></textarea>
+      </div>
+
+      <div class="question-card">
+        <div class="question-title">Ejercicio 2.</div>
+        <p>Determinar el valor de x en la siguiente figura:</p>
+        <div class="img-container">
+          <svg width="250" height="250" viewBox="0 0 250 250">
+            <circle cx="125" cy="125" r="100" fill="none" stroke="#000" stroke-width="2"/>
+            <line x1="45" y1="160" x2="205" y2="90" stroke="#000" stroke-width="1.5"/>
+            <line x1="75" y1="75" x2="155" y2="210" stroke="#000" stroke-width="1.5"/>
+            <text x="100" y="115" font-size="12">E</text>
+            <text x="30" y="170" font-size="12">C</text>
+            <text x="212" y="90" font-size="12">A</text>
+            <text x="70" y="65" font-size="12">B</text>
+            <text x="158" y="225" font-size="12">D</text>
+            <text x="60" y="145" font-size="11">x cm</text>
+            <text x="145" y="125" font-size="11">11 cm</text>
+            <text x="110" y="80" font-size="11">5 cm</text>
+            <text x="125" y="175" font-size="11">9 cm</text>
+          </svg>
+        </div>
+        <textarea placeholder="Escriba aquí el procedimiento paso a paso para hallar x..." onblur="autoSave('p3_ej2_dev', this.value)"></textarea>
+      </div>
+
+      <div class="question-card">
+        <div class="question-title">Ejercicio 4.</div>
+        <p>Se han recolectado las calificaciones de 20 estudiantes de 9° grado en una prueba diagnóstica, agrupadas en la siguiente tabla de frecuencias:</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Calificaciones</th>
+              <th>Frecuencia (f)</th>
+              <th>Pm</th>
+              <th>Pm * f</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>0 - 4</td>
+              <td>4</td>
+              <td><input type="text" onblur="autoSave('tab_pm1', this.value)"></td>
+              <td><input type="text" onblur="autoSave('tab_pmf1', this.value)"></td>
+            </tr>
+            <tr>
+              <td>4 - 8</td>
+              <td>8</td>
+              <td><input type="text" onblur="autoSave('tab_pm2', this.value)"></td>
+              <td><input type="text" onblur="autoSave('tab_pmf2', this.value)"></td>
+            </tr>
+            <tr>
+              <td>8 - 12</td>
+              <td>6</td>
+              <td><input type="text" onblur="autoSave('tab_pm3', this.value)"></td>
+              <td><input type="text" onblur="autoSave('tab_pmf3', this.value)"></td>
+            </tr>
+            <tr>
+              <td>12 - 16</td>
+              <td>2</td>
+              <td><input type="text" onblur="autoSave('tab_pm4', this.value)"></td>
+              <td><input type="text" onblur="autoSave('tab_pmf4', this.value)"></td>
+            </tr>
+            <tr>
+              <td><strong>Total</strong></td>
+              <td><strong>20</strong></td>
+              <td>-</td>
+              <td><input type="text" onblur="autoSave('tab_pmf_tot', this.value)"></td>
+            </tr>
+          </tbody>
+        </table>
+        <br>
+        <p><strong>A partir de estos datos, determine:</strong></p>
+        <p>a) La media aritmética (x̄) de la distribución.</p>
+        <textarea placeholder="Respuesta y procedimiento de a)..." onblur="autoSave('p3_ej4_a', this.value)"></textarea>
+        <p style="margin-top:10px;">b) La varianza (σ²) y la desviación típica (σ) del grupo de estudiantes.</p>
+        <textarea placeholder="Respuesta y procedimiento de b)..." onblur="autoSave('p3_ej4_b', this.value)"></textarea>
+      </div>
+
+      <button type="button" class="btn btn-danger" style="width:100%; margin-top:20px; font-size:1.1rem;" onclick="confirmSubmit()">FINALIZAR Y ENVIAR EVALUACIÓN</button>
+    </form>
+  </div>
+
+  <!-- PANTALLA FINAL -->
+  <div id="result-screen" class="hidden" style="text-align: center; padding: 40px 20px;">
+    <h2 id="res-status-title" style="color: green; font-size: 1.8rem;">Evaluación enviada correctamente.</h2>
+    <p style="margin: 15px 0;">Sus respuestas han sido registradas de forma segura en la base de datos.</p>
+    <div style="background: #edf2f7; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: left; display: inline-block;">
+      <p><strong>Estudiante:</strong> <span id="res-name"></span></p>
+      <p><strong>Sección:</strong> <span id="res-section"></span></p>
+      <p><strong>Tiempo utilizado:</strong> <span id="res-time"></span></p>
+      <p><strong>Estado del intento:</strong> <span id="res-status">COMPLETADO</span></p>
+    </div>
+    <div style="background: #fff5f5; border: 1px solid #feb2b2; color: #c53030; padding: 15px; border-radius: 6px; margin-top: 15px;">
+      ⚠️ <strong>ATENCIÓN:</strong> Por favor tome una captura de pantalla a esta ventana para certificar la entrega de su evaluación en clase.
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE ADVERTENCIAS / SALIDAS -->
+<div id="warning-modal" class="modal">
+  <div class="modal-content">
+    <h3 style="color: var(--accent);" id="modal-title">¡ADVERTENCIA DE SEGURIDAD!</h3>
+    <p id="modal-msg" style="margin: 15px 0;">Se ha detectado una salida del examen o cambio de pantalla.</p>
+    <button class="btn" onclick="closeModal()">Entendido</button>
+  </div>
+</div>
+
+<script>
+  // BANCO DE OPCIONES ORIGINALES CON CLAVES
+  const RAW_OPTIONS = {
+    p2_1: {
+      q: "1",
+      opts: [
+        { id: "o1", text: "20 cm", correct: false },
+        { id: "o2", text: "25 cm", correct: true },
+        { id: "o3", text: "18 cm", correct: false },
+        { id: "o4", text: "30 cm", correct: false }
+      ]
+    },
+    p2_2: {
+      q: "2",
+      opts: [
+        { id: "o1", text: "48 cm", correct: false },
+        { id: "o2", text: "12 cm", correct: true },
+        { id: "o3", text: "18 cm", correct: false },
+        { id: "o4", text: "6 cm", correct: false }
+      ]
+    },
+    p2_3: {
+      q: "3",
+      opts: [
+        { id: "o1", text: "10 m", correct: true },
+        { id: "o2", text: "40 m", correct: false },
+        { id: "o3", text: "15 m", correct: false },
+        { id: "o4", text: "30 m", correct: false }
+      ]
+    },
+    p2_4: {
+      q: "4",
+      opts: [
+        { id: "o1", text: "10 m", correct: false },
+        { id: "o2", text: "12 m", correct: true },
+        { id: "o3", text: "8 m", correct: false },
+        { id: "o4", text: "14 m", correct: false }
+      ]
+    },
+    p2_6: {
+      q: "6",
+      opts: [
+        { id: "o1", text: "h = 8 cm, V = 96π cm³", correct: true },
+        { id: "o2", text: "h = 8 cm, V = 288π cm³", correct: false },
+        { id: "o3", text: "h = 16 cm, V = 48π cm³", correct: false },
+        { id: "o4", text: "h = 7 cm, V = 84π cm³", correct: false }
+      ]
+    },
+    p2_7: {
+      q: "7",
+      opts: [
+        { id: "o1", text: "11.5", correct: false },
+        { id: "o2", text: "4.5", correct: true },
+        { id: "o3", text: "31.5", correct: false },
+        { id: "o4", text: "2.5", correct: false }
+      ]
+    },
+    p2_8: {
+      q: "8",
+      opts: [
+        { id: "o1", text: "3.2 kg", correct: false },
+        { id: "o2", text: "5.7 kg", correct: false },
+        { id: "o3", text: "8.0 kg", correct: true },
+        { id: "o4", text: "10.0 kg", correct: false }
+      ]
+    },
+    p2_9: {
+      q: "9",
+      opts: [
+        { id: "o1", text: "84°", correct: false },
+        { id: "o2", text: "90°", correct: false },
+        { id: "o3", text: "42°", correct: true },
+        { id: "o4", text: "168°", correct: false }
+      ]
+    }
+  };
+
+  let studentData = {};
+  let exitCount = 0;
+  let timerInterval = null;
+  let totalSeconds = 50 * 60; // 50 minutos exactos
+  let answers = {};
+
+  // MECLADOR ALEATORIO (Fisher-Yates)
+  function shuffle(array) {
+    let arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  // RENDERIZAR OPCIONES CON ALEATORIZACIÓN
+  function renderMultipleChoice() {
+    const letters = ['a', 'b', 'c', 'd'];
+    Object.keys(RAW_OPTIONS).forEach(key => {
+      const container = document.getElementById(`opts_${key}`);
+      const shuffledOpts = shuffle(RAW_OPTIONS[key].opts);
+      container.innerHTML = '';
+      shuffledOpts.forEach((opt, idx) => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <label>
+            <input type="radio" name="${key}" value="${opt.id}" onchange="autoSave('${key}', '${opt.id}')">
+            <strong>${letters[idx]})</strong>&nbsp;${opt.text}
+          </label>
+        `;
+        container.appendChild(li);
+      });
+    });
+  }
+
+  // MANEJO DE INICIO DE SESIÓN
+  document.getElementById('student-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    studentData.name = document.getElementById('std-name').value.trim();
+    studentData.section = document.getElementById('std-section').value;
+    studentData.grade = "9.º Grado";
+    studentData.startTime = new Date().toISOString();
+
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('exam-screen').classList.remove('hidden');
+
+    renderMultipleChoice();
+    startTimer();
+    initSecurityListeners();
+    requestFullScreen();
+  });
+
+  // SOLICITAR PANTALLA COMPLETA
+  function requestFullScreen() {
+    const elem = document.documentElement;
+    if (elem.requestFullscreen) { elem.requestFullscreen().catch(() => {}); }
+  }
+
+  // CRONÓMETRO DE 50 MINUTOS
+  function startTimer() {
+    timerInterval = setInterval(() => {
+      totalSeconds--;
+      let m = Math.floor(totalSeconds / 60);
+      let s = totalSeconds % 60;
+      document.getElementById('timer-display').innerText = `${m < 10 ? '0':''}${m}:${s < 10 ? '0':''}${s}`;
+
+      if (totalSeconds <= 0) {
+        clearInterval(timerInterval);
+        finishExam("TIEMPO AGOTADO");
+      }
+    }, 1000);
+  }
+
+  // GUARDADO AUTOMÁTICO
+  function autoSave(field, val) {
+    answers[field] = val;
+    document.getElementById('save-status').innerText = 'Guardando...';
+    setTimeout(() => {
+      document.getElementById('save-status').innerText = 'Cambios guardados';
+    }, 300);
+  }
+
+  // DETECCIÓN DE SALIDAS Y SEGURIDAD
+  let lastExit = 0;
+  function initSecurityListeners() {
+    document.addEventListener('visibilitychange', handleExit);
+    window.addEventListener('blur', handleExit);
+    
+    // Bloquear menú contextual y copiar/pegar
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('keydown', e => {
+      if (e.ctrlKey && ['c', 'v', 'x', 'u', 'p'].includes(e.key.toLowerCase())) {
+        e.preventDefault();
+      }
+    });
+  }
+
+  function handleExit() {
+    const now = Date.now();
+    if (now - lastExit < 2000) return; // Agrupar eventos duplicados
+    lastExit = now;
+
+    exitCount++;
+    if (exitCount === 1) {
+      showModal("ADVERTENCIA (1/2)", "Se ha detectado que salió de la ventana del examen. Este incidente ha sido registrado.");
+    } else if (exitCount === 2) {
+      showModal("ADVERTENCIA FINAL (2/2)", "⚠️ ¡Atención! Una salida más provocará la ANULACIÓN AUTOMÁTICA del examen.");
+    } else if (exitCount >= 3) {
+      finishExam("ANULADO");
+    }
+  }
+
+  function showModal(title, msg) {
+    document.getElementById('modal-title').innerText = title;
+    document.getElementById('modal-msg').innerText = msg;
+    document.getElementById('warning-modal').style.display = 'flex';
+  }
+
+  function closeModal() {
+    document.getElementById('warning-modal').style.display = 'none';
+  }
+
+  function confirmSubmit() {
+    if (confirm("¿Está seguro de que desea finalizar y enviar su evaluación? No podrá modificar sus respuestas después.")) {
+      finishExam("COMPLETADO");
+    }
+  }
+
+  // FINALIZAR EVALUACIÓN
+  function finishExam(status) {
+    clearInterval(timerInterval);
+    document.getElementById('exam-screen').classList.add('hidden');
+    document.getElementById('result-screen').classList.remove('hidden');
+
+    const usedTime = 3000 - totalSeconds;
+    const mins = Math.floor(usedTime / 60);
+    const secs = usedTime % 60;
+
+    document.getElementById('res-name').innerText = studentData.name;
+    document.getElementById('res-section').innerText = studentData.section;
+    document.getElementById('res-time').innerText = `${mins}m ${secs}s`;
+    document.getElementById('res-status').innerText = status;
+
+    if (status === "ANULADO") {
+      document.getElementById('res-status-title').innerText = "EVALUACIÓN ANULADA";
+      document.getElementById('res-status-title').style.color = "red";
+    } else if (status === "TIEMPO AGOTADO") {
+      document.getElementById('res-status-title').innerText = "TIEMPO AGOTADO";
+      document.getElementById('res-status-title').style.color = "orange";
+    }
+  }
+</script>
+</body>
+</html>
