@@ -340,7 +340,7 @@
 </div>
 
 <script>
-  // BANCO DE OPCIONES ORIGINALES CON CLAVES
+  // BANCO DE OPCIONES CON RESPUESTAS CORRECTAS
   const RAW_OPTIONS = {
     p2_1: {
       q: "1",
@@ -436,6 +436,7 @@
     const letters = ['a', 'b', 'c', 'd'];
     Object.keys(RAW_OPTIONS).forEach(key => {
       const container = document.getElementById(`opts_${key}`);
+      if (!container) return;
       const shuffledOpts = shuffle(RAW_OPTIONS[key].opts);
       container.innerHTML = '';
       shuffledOpts.forEach((opt, idx) => {
@@ -499,31 +500,27 @@
     }, 300);
   }
 
-  // DETECCIÓN REFORZADA PARA MÓVILES Y ESCRITORIO
+  // DETECCIÓN REFORZADA DE PESTAÑAS Y SALIDAS
   let lastExitTime = 0;
   function initSecurityListeners() {
-    // 1. Detección de cambio de pestaña / minimizar en móviles y PC
     document.addEventListener('visibilitychange', () => {
       if (document.hidden && examActive) {
         triggerSecurityViolation('Cambio de pestaña o aplicación detectado');
       }
     });
 
-    // 2. Pérdida de foco de ventana
     window.addEventListener('blur', () => {
       if (examActive) {
         triggerSecurityViolation('Pérdida de foco de la pantalla');
       }
     });
 
-    // 3. Salida de pantalla completa (si el navegador la soporta)
     document.addEventListener('fullscreenchange', () => {
       if (!document.fullscreenElement && examActive) {
         triggerSecurityViolation('Salida del modo pantalla completa');
       }
     });
 
-    // 4. Bloqueo de menú contextual y combinaciones de teclas
     document.addEventListener('contextmenu', e => e.preventDefault());
     document.addEventListener('keydown', e => {
       if (e.ctrlKey && ['c', 'v', 'x', 'u', 'p', 'tab'].includes(e.key.toLowerCase())) {
@@ -534,7 +531,6 @@
 
   function triggerSecurityViolation(reason) {
     const now = Date.now();
-    // Filtro de 2.5 segundos para agrupar múltiples disparos del mismo incidente
     if (now - lastExitTime < 2500) return; 
     lastExitTime = now;
 
@@ -543,7 +539,7 @@
     if (exitCount === 1) {
       showModal("ADVERTENCIA (1/2)", `Se ha detectado una salida del examen (${reason}). El incidente ha sido registrado.`);
     } else if (exitCount === 2) {
-      showModal("ADVERTENCIA FINAL (2/2)", `⚠️ ¡Atención! Se detectó otra salida (${reason}). La próxima salida provocará la ANULACIÓN AUTOMÁTICA de tu examen.`);
+      showModal("ADVERTENCIA FINAL (2/2)", `⚠️️ ¡Atención! Se detectó otra salida (${reason}). La próxima salida provocará la ANULACIÓN AUTOMÁTICA de tu examen.`);
     } else if (exitCount >= 3) {
       finishExam("ANULADO");
     }
@@ -557,7 +553,7 @@
 
   function closeModal() {
     document.getElementById('warning-modal').style.display = 'none';
-    requestFullScreen(); // Intenta reingresar a pantalla completa
+    requestFullScreen();
   }
 
   function confirmSubmit() {
@@ -566,13 +562,37 @@
     }
   }
 
+  // CÁLCULO DE LA NOTA
+  function calculateScore() {
+    let totalQuestions = Object.keys(RAW_OPTIONS).length;
+    let correctCount = 0;
+
+    Object.keys(RAW_OPTIONS).forEach(key => {
+      const selectedOptionId = answers[key];
+      if (selectedOptionId) {
+        const optionObj = RAW_OPTIONS[key].opts.find(o => o.id === selectedOptionId);
+        if (optionObj && optionObj.correct) {
+          correctCount++;
+        }
+      }
+    });
+
+    // Calcula la nota en escala de 0.0 a 10.0
+    let finalGrade = (correctCount / totalQuestions) * 10;
+    return {
+      grade: finalGrade.toFixed(1),
+      correct: correctCount,
+      total: totalQuestions
+    };
+  }
+
   function finishExam(status) {
     examActive = false;
     clearInterval(timerInterval);
     document.getElementById('exam-screen').classList.add('hidden');
     document.getElementById('result-screen').classList.remove('hidden');
 
-    const usedTime = 3000 - totalSeconds;
+    const usedTime = (50 * 60) - totalSeconds;
     const mins = Math.floor(usedTime / 60);
     const secs = usedTime % 60;
 
@@ -580,6 +600,20 @@
     document.getElementById('res-section').innerText = studentData.section;
     document.getElementById('res-time').innerText = `${mins}m ${secs}s`;
     document.getElementById('res-status').innerText = status;
+
+    const score = calculateScore();
+
+    // MOSTRAR CALIFICACIÓN EN LA PANTALLA
+    const gradeElement = document.getElementById('res-grade');
+    if (gradeElement) {
+      if (status === "ANULADO") {
+        gradeElement.innerText = "0.0 (Anulado)";
+        gradeElement.style.color = "red";
+      } else {
+        gradeElement.innerText = `${score.grade} / 10.0 (${score.correct} de ${score.total} aciertos)`;
+        gradeElement.style.color = score.grade >= 6.0 ? "green" : "red";
+      }
+    }
 
     if (status === "ANULADO") {
       document.getElementById('res-status-title').innerText = "EVALUACIÓN ANULADA";
@@ -590,5 +624,6 @@
     }
   }
 </script>
+
 </body>
 </html>
