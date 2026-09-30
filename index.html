@@ -23,7 +23,6 @@
     h1 { color: var(--primary); font-size: 1.6rem; }
     h2 { color: var(--secondary); font-size: 1.2rem; margin-top: 5px; }
 
-    /* Sticky Timer Bar */
     #timer-bar {
       position: sticky; top: 0; z-index: 100; background: var(--primary); color: #fff;
       padding: 12px 20px; font-weight: bold; font-size: 1.2rem; display: flex;
@@ -48,11 +47,9 @@
     .btn:hover { background: var(--primary); }
     .btn-danger { background: var(--accent); }
 
-    /* Modal Warning */
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; }
     .modal-content { background: white; padding: 30px; border-radius: 8px; max-width: 500px; text-align: center; }
 
-    /* Table styles */
     table { width: 100%; border-collapse: collapse; margin-top: 15px; }
     th, td { border: 1px solid var(--border); padding: 8px; text-align: center; }
     th { background-color: #edf2f7; }
@@ -65,7 +62,6 @@
 <body>
 
 <div class="container">
-  <!-- ENCABEZADO OFICIAL -->
   <header>
     <h1>INSTITUCIÓN EDUCATIVA</h1>
     <h2>EVALUACIÓN DE MATEMÁTICAS — 9.° GRADO</h2>
@@ -108,121 +104,104 @@
     <form id="exam-form">
       <!-- PARTE I -->
       <div class="section-title">PARTE I. FALSO O VERDADERO (10% - 1 punto c/u)</div>
-      <p style="margin-bottom: 15px; font-size: 0.9rem;">Indicación: Seleccione V si la proposición es verdadera, o F si es falsa. Justifique sus respuestas falsas en el cuadro adjunto.</p>
+      <p style="margin-bottom: 15px; font-size: 0.9rem;">Indicación: Seleccione V si la proposición es verdadera, o F si es falsa.</p>
 
       <div class="question-card">
         <div class="question-title">1. Dos triángulos son semejantes si sus ángulos correspondientes son congruentes y sus lados correspondientes son proporcionales.</div>
         <label><input type="radio" name="p1_val" value="V" onchange="autoSave('p1_val', 'V')"> Verdadero (V)</label><br>
         <label><input type="radio" name="p1_val" value="F" onchange="autoSave('p1_val', 'F')"> Falso (F)</label>
-        <textarea placeholder="Justifique si es Falso..." onblur="autoSave('p1_just', this.value)"></textarea>
       </div>
 
       <div class="question-card">
         <div class="question-title">2. El segmento que une los puntos medios de dos lados de un triángulo es paralelo al tercer lado y su longitud equivale al doble de la medida de dicho tercer lado.</div>
         <label><input type="radio" name="p2_val" value="V" onchange="autoSave('p2_val', 'V')"> Verdadero (V)</label><br>
         <label><input type="radio" name="p2_val" value="F" onchange="autoSave('p2_val', 'F')"> Falso (F)</label>
-        <textarea placeholder="Justifique si es Falso..." onblur="autoSave('p2_just', this.value)"></textarea>
       </div>
 
       <div class="question-card">
         <div class="question-title">3. Si tres o más rectas paralelas son cortadas por dos rectas transversales, los segmentos determinados en una de las transversales son proporcionales a los segmentos correspondientes en la otra transversal.</div>
         <label><input type="radio" name="p3_val" value="V" onchange="autoSave('p3_val', 'V')"> Verdadero (V)</label><br>
         <label><input type="radio" name="p3_val" value="F" onchange="autoSave('p3_val', 'F')"> Falso (F)</label>
-        <textarea placeholder="Justifique si es Falso..." onblur="autoSave('p3_just', this.value)"></textarea>
       </div>
 
       <div class="question-card">
         <div class="question-title">4. En una circunferencia, la medida del ángulo inscrito es igual a la medida del ángulo central que subtiende el mismo arco.</div>
         <label><input type="radio" name="p4_val" value="V" onchange="autoSave('p4_val', 'V')"> Verdadero (V)</label><br>
         <label><input type="radio" name="p4_val" value="F" onchange="autoSave('p4_val', 'F')"> Falso (F)</label>
-        <textarea placeholder="Justifique si es Falso..." onblur="autoSave('p4_just', this.value)"></textarea>
       </div>
 
       <div class="question-card">
         <div class="question-title">5. Si a cada uno de los datos de una distribución se le suma una constante 'k', la desviación típica aumenta en esa misma cantidad 'k'.</div>
         <label><input type="radio" name="p5_val" value="V" onchange="autoSave('p5_val', 'V')"> Verdadero (V)</label><br>
         <label><input type="radio" name="p5_val" value="F" onchange="autoSave('p5_val', 'F')"> Falso (F)</label>
-        <textarea placeholder="Justifique si es Falso..." onblur="autoSave('p5_just', this.value)"></textarea>
       </div>
 
       <div class="question-card">
         <div class="question-title">6. Si cada dato de una serie estadística se multiplica por una constante positiva 'c', la nueva desviación típica queda multiplicada por 'c'.</div>
         <label><input type="radio" name="p6_val" value="V" onchange="autoSave('p6_val', 'V')"> Verdadero (V)</label><br>
         <label><input type="radio" name="p6_val" value="F" onchange="autoSave('p6_val', 'F')"> Falso (F)</label>
-        <textarea placeholder="Justifique si es Falso..." onblur="autoSave('p6_just', this.value)"></textarea>
       </div>
 
       <div class="question-card">
         <div class="question-title">7. Dos cuerdas paralelas en una circunferencia determinan entre ellas arcos de distinta medida.</div>
         <label><input type="radio" name="p7_val" value="V" onchange="autoSave('p7_val', 'V')"> Verdadero (V)</label><br>
         <label><input type="radio" name="p7_val" value="F" onchange="autoSave('p7_val', 'F')"> Falso (F)</label>
-        <textarea placeholder="Justifique si es Falso..." onblur="autoSave('p7_just', this.value)"></textarea>
       </div>
 
       <div class="question-card">
         <div class="question-title">8. El rango y la desviación media son medidas de tendencia central que indican el valor promedio de los datos agrupados.</div>
         <label><input type="radio" name="p8_val" value="V" onchange="autoSave('p8_val', 'V')"> Verdadero (V)</label><br>
         <label><input type="radio" name="p8_val" value="F" onchange="autoSave('p8_val', 'F')"> Falso (F)</label>
-        <textarea placeholder="Justifique si es Falso..." onblur="autoSave('p8_just', this.value)"></textarea>
       </div>
 
       <div class="question-card">
         <div class="question-title">9. La altura de un cono recto, el radio de su base y su generatriz forman un triángulo rectángulo donde la generatriz actúa como la hipotenusa.</div>
         <label><input type="radio" name="p9_val" value="V" onchange="autoSave('p9_val', 'V')"> Verdadero (V)</label><br>
         <label><input type="radio" name="p9_val" value="F" onchange="autoSave('p9_val', 'F')"> Falso (F)</label>
-        <textarea placeholder="Justifique si es Falso..." onblur="autoSave('p9_just', this.value)"></textarea>
       </div>
 
       <!-- PARTE II -->
       <div class="section-title">PARTE II. OPCIÓN ÚNICA / OPCIÓN MÚLTIPLE (30% - 3 puntos c/u)</div>
-      <p style="margin-bottom: 15px; font-size: 0.9rem;">Indicación: Seleccione la respuesta correcta. Ingrese sus cálculos en el cuadro de texto.</p>
+      <p style="margin-bottom: 15px; font-size: 0.9rem;">Indicación: Seleccione la respuesta correcta en cada caso.</p>
 
       <div class="question-card" id="q_p2_1">
         <div class="question-title">1. Los lados de un triángulo miden 6 cm, 8 cm y 10 cm. Si un triángulo semejante a él tiene un lado homólogo al de 6 cm que mide 15 cm, ¿cuál es la longitud del lado mayor del segundo triángulo?</div>
         <ul class="options-list" id="opts_p2_1"></ul>
-        <textarea placeholder="Escriba sus cálculos justificativos..." onblur="autoSave('p2_1_calc', this.value)"></textarea>
       </div>
 
       <div class="question-card" id="q_p2_2">
         <div class="question-title">2. En el triángulo ABC, el lado AC mide 24 cm. Si M y N son los puntos medios de los lados AB y BC respectivamente, ¿cuánto mide el segmento MN según el Teorema de la base media?</div>
         <ul class="options-list" id="opts_p2_2"></ul>
-        <textarea placeholder="Escriba sus cálculos justificativos..." onblur="autoSave('p2_2_calc', this.value)"></textarea>
       </div>
 
       <div class="question-card" id="q_p2_3">
         <div class="question-title">3. Se desea conocer la longitud de la sombra de un edificio de 20 m de altura en el mismo instante en que un poste vertical de 3 m de alto proyecta una sombra de 1.5 m. la longitud de la sombra del edificio mide:</div>
         <ul class="options-list" id="opts_p2_3"></ul>
-        <textarea placeholder="Escriba sus cálculos justificativos..." onblur="autoSave('p2_3_calc', this.value)"></textarea>
       </div>
 
       <div class="question-card" id="q_p2_4">
         <div class="question-title">4. Una escalera de 13 metros de longitud está apoyada sobre una pared vertical. Si la base de la escalera se encuentra a 5 metros de la pared, ¿a qué altura sobre la pared se halla el extremo superior de la escalera?</div>
         <ul class="options-list" id="opts_p2_4"></ul>
-        <textarea placeholder="Escriba sus cálculos justificativos..." onblur="autoSave('p2_4_calc', this.value)"></textarea>
       </div>
 
       <div class="question-card" id="q_p2_6">
         <div class="question-title">6. Un cono recto tiene un radio en la base de r = 6 cm y una generatriz g = 10 cm. ¿Cuál es su altura (h) y su volumen exacto (V) en términos de π?</div>
         <ul class="options-list" id="opts_p2_6"></ul>
-        <textarea placeholder="Escriba sus cálculos justificativos..." onblur="autoSave('p2_6_calc', this.value)"></textarea>
       </div>
 
       <div class="question-card" id="q_p2_7">
         <div class="question-title">7. En una distribución de datos, la desviación típica original es σ = 4.5. Si a cada valor de la variable se le suma la constante k = 7, ¿cuál es el valor de la nueva desviación típica?</div>
         <ul class="options-list" id="opts_p2_7"></ul>
-        <textarea placeholder="Escriba sus cálculos justificativos..." onblur="autoSave('p2_7_calc', this.value)"></textarea>
       </div>
 
       <div class="question-card" id="q_p2_8">
         <div class="question-title">8. La desviación típica del peso de un conjunto de productos es σ = 3.2 kg. Si todos los pesos se multiplican por un factor de conversión de c = 2.5, ¿cuál será la nueva desviación típica?</div>
         <ul class="options-list" id="opts_p2_8"></ul>
-        <textarea placeholder="Escriba sus cálculos justificativos..." onblur="autoSave('p2_8_calc', this.value)"></textarea>
       </div>
 
       <div class="question-card" id="q_p2_9">
         <div class="question-title">9. En una circunferencia se trazan dos cuerdas paralelas AB y CD. Si el ángulo central AOC mide 84°, ¿cuánto mide el ángulo inscrito BAD?</div>
         <ul class="options-list" id="opts_p2_9"></ul>
-        <textarea placeholder="Escriba sus cálculos justificativos..." onblur="autoSave('p2_9_calc', this.value)"></textarea>
       </div>
 
       <!-- PARTE III -->
@@ -231,7 +210,6 @@
       <div class="question-card">
         <div class="question-title">Ejercicio 1.</div>
         <p>En la siguiente figura (o representación), las líneas L1, L2 y L3 son paralelas. Se conocen las medidas AE = x + 2, EB = 6, CF = 2x - 1, y FD = 8. Determinar el valor de x.</p>
-
         <textarea placeholder="Escriba aquí el desarrollo algebraico completo y el resultado..." onblur="autoSave('p3_ej1_dev', this.value)"></textarea>
       </div>
 
@@ -314,15 +292,16 @@
     </form>
   </div>
 
-  <!-- PANTALLA FINAL -->
+  <!-- PANTALLA FINAL DE RESULTADOS -->
   <div id="result-screen" class="hidden" style="text-align: center; padding: 40px 20px;">
     <h2 id="res-status-title" style="color: green; font-size: 1.8rem;">Evaluación enviada correctamente.</h2>
-    <p style="margin: 15px 0;">Sus respuestas han sido registradas de forma segura en la base de datos.</p>
-    <div style="background: #edf2f7; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: left; display: inline-block;">
+    <p style="margin: 15px 0;">Sus respuestas han sido registradas de forma segura.</p>
+    <div style="background: #edf2f7; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: left; display: inline-block; min-width: 280px;">
       <p><strong>Estudiante:</strong> <span id="res-name"></span></p>
       <p><strong>Sección:</strong> <span id="res-section"></span></p>
       <p><strong>Tiempo utilizado:</strong> <span id="res-time"></span></p>
       <p><strong>Estado del intento:</strong> <span id="res-status">COMPLETADO</span></p>
+      <p style="margin-top: 10px; font-size: 1.1rem;"><strong>Calificación:</strong> <span id="res-grade">--</span></p>
     </div>
     <div style="background: #fff5f5; border: 1px solid #feb2b2; color: #c53030; padding: 15px; border-radius: 6px; margin-top: 15px;">
       ⚠️ <strong>ATENCIÓN:</strong> Por favor tome una captura de pantalla a esta ventana para certificar la entrega de su evaluación en clase.
@@ -330,7 +309,7 @@
   </div>
 </div>
 
-<!-- MODAL DE ADVERTENCIAS / SALIDAS -->
+<!-- MODAL DE ADVERTENCIAS -->
 <div id="warning-modal" class="modal">
   <div class="modal-content">
     <h3 style="color: var(--accent);" id="modal-title">¡ADVERTENCIA DE SEGURIDAD!</h3>
@@ -500,7 +479,6 @@
     }, 300);
   }
 
-  // DETECCIÓN REFORZADA DE PESTAÑAS Y SALIDAS
   let lastExitTime = 0;
   function initSecurityListeners() {
     document.addEventListener('visibilitychange', () => {
@@ -539,7 +517,7 @@
     if (exitCount === 1) {
       showModal("ADVERTENCIA (1/2)", `Se ha detectado una salida del examen (${reason}). El incidente ha sido registrado.`);
     } else if (exitCount === 2) {
-      showModal("ADVERTENCIA FINAL (2/2)", `⚠️️ ¡Atención! Se detectó otra salida (${reason}). La próxima salida provocará la ANULACIÓN AUTOMÁTICA de tu examen.`);
+      showModal("ADVERTENCIA FINAL (2/2)", `⚠️ ¡Atención! Se detectó otra salida (${reason}). La próxima salida provocará la ANULACIÓN AUTOMÁTICA de tu examen.`);
     } else if (exitCount >= 3) {
       finishExam("ANULADO");
     }
@@ -562,7 +540,6 @@
     }
   }
 
-  // CÁLCULO DE LA NOTA
   function calculateScore() {
     let totalQuestions = Object.keys(RAW_OPTIONS).length;
     let correctCount = 0;
@@ -577,7 +554,6 @@
       }
     });
 
-    // Calcula la nota en escala de 0.0 a 10.0
     let finalGrade = (correctCount / totalQuestions) * 10;
     return {
       grade: finalGrade.toFixed(1),
@@ -603,7 +579,6 @@
 
     const score = calculateScore();
 
-    // MOSTRAR CALIFICACIÓN EN LA PANTALLA
     const gradeElement = document.getElementById('res-grade');
     if (gradeElement) {
       if (status === "ANULADO") {
@@ -624,6 +599,5 @@
     }
   }
 </script>
-
 </body>
 </html>
