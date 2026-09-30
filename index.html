@@ -39,9 +39,9 @@
     .options-list label:hover { background: #edf2f7; }
     .options-list input[type="radio"] { margin-right: 12px; }
 
-    textarea, input[type="text"], select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; margin-top: 8px; }
+    textarea, input[type="text"], input[type="password"], select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; margin-top: 8px; }
     textarea { min-height: 80px; resize: vertical; -webkit-user-select: text; user-select: text; }
-    input[type="text"] { -webkit-user-select: text; user-select: text; }
+    input[type="text"], input[type="password"] { -webkit-user-select: text; user-select: text; }
 
     .btn { background: var(--secondary); color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: bold; }
     .btn:hover { background: var(--primary); }
@@ -62,13 +62,20 @@
 <body>
 
 <div class="container">
+  <!-- ENLACE DE ACCESO DOCENTE -->
+  <div style="text-align: right; margin-bottom: 10px;">
+    <button type="button" onclick="openTeacherLogin()" style="background:none; border:none; color:#718096; cursor:pointer; font-size:0.85rem; text-decoration:underline;">
+      🔒 Acceso Docente
+    </button>
+  </div>
+
   <header>
     <h1>INSTITUCIÓN EDUCATIVA</h1>
     <h2>EVALUACIÓN DE MATEMÁTICAS — 9.° GRADO</h2>
     <p style="margin-top:8px; font-size: 0.9rem;">Tiempo asignado: 50 minutos | Un solo intento permitido</p>
   </header>
 
-  <!-- FORMULARIO DE INGRESO -->
+  <!-- FORMULARIO DE INGRESO DEL ESTUDIANTE -->
   <div id="login-screen">
     <h3>Datos del Estudiante</h3>
     <p style="font-size: 0.9rem; color: #666; margin-bottom: 15px;">Complete sus datos para iniciar la evaluación.</p>
@@ -307,9 +314,58 @@
       ⚠️ <strong>ATENCIÓN:</strong> Por favor tome una captura de pantalla a esta ventana para certificar la entrega de su evaluación en clase.
     </div>
   </div>
+
+  <!-- PANEL PRIVADO DOCENTE -->
+  <div id="teacher-panel" class="hidden" style="margin-top: 20px; border-top: 2px solid var(--primary); padding-top: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+      <h2>Panel de Control Docente</h2>
+      <button class="btn" onclick="exportToCSV()" style="background: #2f855a;">📥 Exportar a CSV (Excel)</button>
+    </div>
+
+    <div style="margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+      <input type="text" id="filter-name" placeholder="Filtrar por nombre..." onkeyup="filterTable()" style="margin: 0; flex: 1;">
+      <select id="filter-status" onchange="filterTable()" style="margin: 0; width: 200px;">
+        <option value="">Todos los estados</option>
+        <option value="COMPLETADO">COMPLETADO</option>
+        <option value="ANULADO">ANULADO</option>
+        <option value="TIEMPO AGOTADO">TIEMPO AGOTADO</option>
+      </select>
+    </div>
+
+    <div style="overflow-x: auto;">
+      <table id="teacher-table">
+        <thead>
+          <tr>
+            <th>Estudiante</th>
+            <th>Sección</th>
+            <th>Hora Inicio</th>
+            <th>Tiempo</th>
+            <th>Salidas</th>
+            <th>Nota</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody id="teacher-table-body">
+          <!-- Datos cargados dinámicamente -->
+        </tbody>
+      </table>
+    </div>
+    <button class="btn btn-danger" onclick="closeTeacherPanel()" style="margin-top: 15px;">Cerrar Panel Docente</button>
+  </div>
 </div>
 
-<!-- MODAL DE ADVERTENCIAS -->
+<!-- MODAL LOGIN DOCENTE -->
+<div id="teacher-login-modal" class="modal">
+  <div class="modal-content">
+    <h3>Acceso Privado Docente</h3>
+    <p style="margin: 10px 0; font-size: 0.9rem; color: #666;">Ingrese la clave de administración:</p>
+    <input type="password" id="teacher-pass" placeholder="Contraseña..." style="margin-bottom: 15px;">
+    <button class="btn" onclick="checkTeacherPass()">Ingresar</button>
+    <button class="btn btn-danger" onclick="closeTeacherLogin()" style="margin-left: 5px;">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL DE ADVERTENCIAS / SALIDAS -->
 <div id="warning-modal" class="modal">
   <div class="modal-content">
     <h3 style="color: var(--accent);" id="modal-title">¡ADVERTENCIA DE SEGURIDAD!</h3>
@@ -319,7 +375,7 @@
 </div>
 
 <script>
-  // BANCO DE OPCIONES CON RESPUESTAS CORRECTAS
+  // BANCO DE OPCIONES ORIGINALES Y CLAVES
   const RAW_OPTIONS = {
     p2_1: {
       q: "1",
@@ -401,6 +457,9 @@
   let totalSeconds = 50 * 60;
   let answers = {};
   let examActive = false;
+
+  const TEACHER_PASS = "1234"; // 🔑 Clave de acceso al panel docente
+  let allAttempts = JSON.parse(localStorage.getItem('evaluaciones_registradas')) || [];
 
   function shuffle(array) {
     let arr = [...array];
@@ -562,6 +621,24 @@
     };
   }
 
+  function saveAttemptToDatabase(status, scoreData, usedTimeSeconds) {
+    const mins = Math.floor(usedTimeSeconds / 60);
+    const secs = usedTimeSeconds % 60;
+
+    const record = {
+      name: studentData.name || "Desconocido",
+      section: studentData.section || "-",
+      startTime: new Date(studentData.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      usedTime: `${mins}m ${secs}s`,
+      exits: exitCount,
+      grade: status === "ANULADO" ? "0.0" : scoreData.grade,
+      status: status
+    };
+
+    allAttempts.push(record);
+    localStorage.setItem('evaluaciones_registradas', JSON.stringify(allAttempts));
+  }
+
   function finishExam(status) {
     examActive = false;
     clearInterval(timerInterval);
@@ -597,6 +674,97 @@
       document.getElementById('res-status-title').innerText = "TIEMPO AGOTADO";
       document.getElementById('res-status-title').style.color = "orange";
     }
+
+    saveAttemptToDatabase(status, score, usedTime);
+  }
+
+  // LÓGICA DEL PANEL DOCENTE
+  function openTeacherLogin() {
+    document.getElementById('teacher-login-modal').style.display = 'flex';
+  }
+
+  function closeTeacherLogin() {
+    document.getElementById('teacher-login-modal').style.display = 'none';
+  }
+
+  function checkTeacherPass() {
+    const inputPass = document.getElementById('teacher-pass').value;
+    if (inputPass === TEACHER_PASS) {
+      closeTeacherLogin();
+      document.getElementById('teacher-panel').classList.remove('hidden');
+      renderTeacherTable();
+    } else {
+      alert("Contraseña incorrecta.");
+    }
+  }
+
+  function closeTeacherPanel() {
+    document.getElementById('teacher-panel').classList.add('hidden');
+  }
+
+  function renderTeacherTable() {
+    const tbody = document.getElementById('teacher-table-body');
+    tbody.innerHTML = '';
+
+    if (allAttempts.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7">No hay evaluaciones registradas aún.</td></tr>';
+      return;
+    }
+
+    allAttempts.forEach(item => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="text-align: left;">${item.name}</td>
+        <td>${item.section}</td>
+        <td>${item.startTime}</td>
+        <td>${item.usedTime}</td>
+        <td>${item.exits}</td>
+        <td><strong>${item.grade}</strong></td>
+        <td><span style="color: ${item.status === 'ANULADO' ? 'red' : 'green'}; font-weight: bold;">${item.status}</span></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function filterTable() {
+    const nameFilter = document.getElementById('filter-name').value.toLowerCase();
+    const statusFilter = document.getElementById('filter-status').value;
+    const rows = document.querySelectorAll('#teacher-table-body tr');
+
+    rows.forEach(row => {
+      const name = row.children[0]?.innerText.toLowerCase() || '';
+      const status = row.children[6]?.innerText || '';
+      const matchesName = name.includes(nameFilter);
+      const matchesStatus = statusFilter === '' || status === statusFilter;
+
+      if (matchesName && matchesStatus) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  }
+
+  function exportToCSV() {
+    if (allAttempts.length === 0) {
+      alert("No hay datos para exportar.");
+      return;
+    }
+
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Estudiante,Seccion,Hora Inicio,Tiempo Utilizado,Salidas Detectadas,Nota,Estado\n";
+
+    allAttempts.forEach(row => {
+      csvContent += `"${row.name}","${row.section}","${row.startTime}","${row.usedTime}",${row.exits},"${row.grade}","${row.status}"\n`;
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Resultados_Evaluacion_9no_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 </script>
 </body>
